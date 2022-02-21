@@ -1,0 +1,7 @@
+name "icon_viewer"
+
+run "installer.ms"
+drop "installer.ms"
+
+clear temp on max exit
+clear temp on reset

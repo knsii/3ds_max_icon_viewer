@@ -1,0 +1,22 @@
+QLineEdit {background-color:#383838;padding:2px;border-radius:3px;border:1px solid #333333;}
+QLineEdit::focus{border:1px solid #666666}
+#icon_list {background-color:#383838;outline:0;}
+#icon_list::item {padding:4px;height:32px;width:32px;}
+QComboBox {background-color:#383838}
+QComboBox QListView::item {background-color:#383838;border-bottom:1px solid #333333}
+#icon_count {color:#FDB000;margin-left:5px}
+QTreeView QHeaderView::section  {padding: 2px; height:20px;border: 0px solid #567dbc;background:#383838;}
+QScrollBar {border:1px solid #383838 ;background-color:#383838;border-radius:2px}
+QScrollBar:vertical {max-width:6px;}
+QScrollBar:horizontal {max-height:6px;}
+QScrollBar::add-page, QScrollBar::sub-page {background: none;}
+QScrollBar::handle:vertical {min-height:50px;width:4px;}
+QScrollBar::handle:horizontal {min-width:50px;height:4px;}
+QScrollBar::handle {border:0;background-color:#515151;border-radius:2px;margin:0}
+QScrollBar::handle:hover {backagroud-color:red}
+QScrollBar::add-line {height: 0px;}
+QScrollBar::sub-line {height: 0px;}
+QTextBrowser{background-color:#383838;padding:5px}
+
+QProgressBar{height:10px;border:1px solid #222222;text-align:right;padding:2px;border-radius:2px;font-size:9px;}
+QProgressBar::chunk{background-color:#1493DF;border-radius:2px;}
