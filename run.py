@@ -1,7 +1,6 @@
+import os
 import sys
 from types import ModuleType
-
-
 
 from pymxs import runtime as mxs
 path = os.path.join(mxs.getdir(mxs.name("userscripts")),"python")
@@ -52,9 +51,7 @@ def reload_module(top_module, max_depth=3):
 
     return not_reloaded
 
-
-
-folder = r"D:\disk\work\tools\3ds_max\tools\icon_viewer"
+folder = os.path.dirname(__file__)
 if not folder in sys.path:
     sys.path.append(folder)
 
