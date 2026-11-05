@@ -40,7 +40,7 @@ class IconViewerController(QtCore.QObject):
                 # remove folder
                 path = re.sub(sdir, "", path)
                 # remove size and .png
-                path = re.sub("(.*?)(_\d+)?.png", r"\1", path)
+                path = re.sub(r"(.*?)(_\d+)?.png", r"\1", path)
                 break
         return path
 
@@ -51,7 +51,7 @@ class IconViewerController(QtCore.QObject):
         images = []
 
         for sdir in data.new_custom_icon_path:
-            dit = QtCore.QDirIterator(sdir, flags=QtCore.QDirIterator.Subdirectories)
+            dit = QtCore.QDirIterator(sdir, flags=QtCore.QDirIterator.IteratorFlag.Subdirectories)
             while dit.hasNext():
                 info = dit.fileInfo()
                 path = info.absoluteFilePath()
@@ -59,7 +59,7 @@ class IconViewerController(QtCore.QObject):
                     images.append(path)
                 dit.next()
 
-        dit = QtCore.QDirIterator(":/", flags=QtCore.QDirIterator.Subdirectories)
+        dit = QtCore.QDirIterator(":/", flags=QtCore.QDirIterator.IteratorFlag.Subdirectories)
         while dit.hasNext():
             info = dit.fileInfo()
             path = info.absoluteFilePath()
@@ -73,7 +73,7 @@ class IconViewerController(QtCore.QObject):
 
         filtered = dict()
         for image in images:
-            result = re.match("(.*)_(\d+x?\d+)?(.png)", image)
+            result = re.match(r"(.*)_(\d+x?\d+)?(.png)", image)
             if result is None:
                 key = image[:-4]
                 filtered[key] = None
@@ -143,7 +143,7 @@ class IconViewerController(QtCore.QObject):
             icon = os.path.realpath(icon)
             file_name = os.path.basename(icon)
             result = re.match(
-                "(.*)_(\d+)([ai]).bmp", file_name, flags=re.IGNORECASE)
+                r"(.*)_(\d+)([ai]).bmp", file_name, flags=re.IGNORECASE)
             if result is None:
                 continue
             icon_name, icon_size, icon_type = result.groups()

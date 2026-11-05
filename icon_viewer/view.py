@@ -13,13 +13,13 @@ class AtlasIconView(QtWidgets.QListView):
         self.need_update = False
 
     def mousePressEvent(self, event):
-        if event.type() == QtCore.QEvent.MouseButtonPress:
+        if event.type() == QtCore.QEvent.Type.MouseButtonPress:
             pos = event.pos()
             index = self.indexAt(event.pos())
             icon = index.data(model.Object)
             if not icon:
                 return super(AtlasIconView, self).mousePressEvent(event)
-            if event.button() == QtCore.Qt.LeftButton:
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
                 item_height = icon.map.size().height()
 
                 i_pos = pos.x()+self.horizontalScrollBar().sliderPosition()-icon.name_width

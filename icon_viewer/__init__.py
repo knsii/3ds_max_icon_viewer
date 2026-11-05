@@ -1,4 +1,4 @@
-__version__ = 0.02
+__version__ = 0.03
 
 
 from .app import show

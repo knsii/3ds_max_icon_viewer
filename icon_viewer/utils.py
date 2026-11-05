@@ -16,10 +16,14 @@ def get_max_dir(name):
 def get_max_main_window():
     version = get_max_version()
     if version > 2020:
-        import shiboken2
-        from PySide2 import QtWidgets
-        widget = QtWidgets.QWidget.find(mxs.windows.getMAXHWND())
-        return shiboken2.wrapInstance(shiboken2.getCppPointer(widget)[0], QtWidgets.QMainWindow)
+        # qtmax is Autodesk's helper module (Max 2021+); works with PySide2 and PySide6
+        try:
+            import qtmax
+            return qtmax.GetQMaxMainWindow()
+        except ImportError:
+            from .qt import QtWidgets, shiboken
+            widget = QtWidgets.QWidget.find(mxs.windows.getMAXHWND())
+            return shiboken.wrapInstance(shiboken.getCppPointer(widget)[0], QtWidgets.QMainWindow)
     else:
         import MaxPlus
         if version > 2017:

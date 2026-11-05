@@ -25,10 +25,10 @@ class MaxIconViewer(QtWidgets.QDialog):
 
         self.setWindowFlags(
             self.windowFlags() |
-            QtCore.Qt.WindowTitleHint |
-            QtCore.Qt.WindowMaximizeButtonHint |
-            QtCore.Qt.WindowMinimizeButtonHint |
-            QtCore.Qt.WindowCloseButtonHint
+            QtCore.Qt.WindowType.WindowTitleHint |
+            QtCore.Qt.WindowType.WindowMaximizeButtonHint |
+            QtCore.Qt.WindowType.WindowMinimizeButtonHint |
+            QtCore.Qt.WindowType.WindowCloseButtonHint
         )
 
         self.max_version = utils.get_max_version()

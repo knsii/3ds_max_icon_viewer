@@ -12,12 +12,12 @@ class QtIconDelegate(QtWidgets.QStyledItemDelegate):
 
         painter.fillRect(rect, option.palette.alternateBase())
 
-        if option.state & QtWidgets.QStyle.State_MouseOver:
+        if option.state & QtWidgets.QStyle.StateFlag.State_MouseOver:
             painter.fillRect(rect, option.palette.base())
 
         painter.save()
 
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             painter.setOpacity(0.6)
             painter.fillRect(rect, option.palette.light())
 
@@ -25,13 +25,16 @@ class QtIconDelegate(QtWidgets.QStyledItemDelegate):
 
         pixmap = icon.map
         if pixmap:
-            if option.state & QtWidgets.QStyle.State_Selected:
+            if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
                 painter.setOpacity(0.8)
             else:
                 painter.setOpacity(1)
+            # Qt 6 is strict about int vs float, so pass a QPointF
             painter.drawImage(
-                rect.x()+(rect.width()-pixmap.width())/2,
-                rect.y()+(rect.height()-pixmap.height())/2,pixmap
+                QtCore.QPointF(
+                    rect.x()+(rect.width()-pixmap.width())/2.0,
+                    rect.y()+(rect.height()-pixmap.height())/2.0),
+                pixmap
             )
 
         painter.restore()
@@ -50,10 +53,10 @@ class AtlasIconDelegate(QtWidgets.QStyledItemDelegate):
 
         painter.fillRect(rect, QtGui.QColor("#444444"))
 
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             painter.fillRect(rect, QtGui.QColor("#555555"))
 
-        if option.state & QtWidgets.QStyle.State_MouseOver:
+        if option.state & QtWidgets.QStyle.StateFlag.State_MouseOver:
             painter.fillRect(rect, option.palette.base())
 
         painter.save()
@@ -68,10 +71,10 @@ class AtlasIconDelegate(QtWidgets.QStyledItemDelegate):
         name = icon.name.lower()
         # elide
         name = name_metrics.elidedText(
-            name, QtCore.Qt.ElideRight, name_rect.width())
+            name, QtCore.Qt.TextElideMode.ElideRight, int(name_rect.width()))
 
         # draw label
-        if option.state & QtWidgets.QStyle.State_MouseOver or option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.StateFlag.State_MouseOver or option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             pen = QtGui.QPen(QtGui.QColor("#FFFFFF"), 1)
         else:
             pen = QtGui.QPen(QtGui.QColor("#AAAAAA"), 1)
@@ -82,10 +85,10 @@ class AtlasIconDelegate(QtWidgets.QStyledItemDelegate):
         pixmap = icon.map
         icon_rect = option.rect.adjusted(icon.name_width, 0, 0, 0)
 
-        if option.state & QtWidgets.QStyle.State_MouseOver:
+        if option.state & QtWidgets.QStyle.StateFlag.State_MouseOver:
             painter.setOpacity(0.6)
 
-        elif option.state & QtWidgets.QStyle.State_Selected:
+        elif option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             painter.setOpacity(0.9)
 
         painter.drawImage(icon_rect.x(), icon_rect.y(), pixmap)
@@ -101,7 +104,7 @@ class AtlasIconDelegate(QtWidgets.QStyledItemDelegate):
                 icon_rect.y()+grid_h
             )
 
-        if not icon.selected == None and option.state & QtWidgets.QStyle.State_Selected:
+        if not icon.selected == None and option.state & QtWidgets.QStyle.StateFlag.State_Selected:
             pen = QtGui.QPen(QtGui.QColor("#00FF00"), 1)
             painter.setPen(pen)
             grid_rect = QtCore.QRect(
