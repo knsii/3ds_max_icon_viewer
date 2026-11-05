@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-from .qt import QtWidgets,QtCore,QtGui,QSortFilterProxyModel,QStringListModel, __qtbind__
+from .qt import QtWidgets,QtCore,QtGui,QSortFilterProxyModel,QStringListModel, QAction, set_filter_text
 
 from . import model, view, delegate, data
 
@@ -25,7 +25,7 @@ class Notification(QtWidgets.QLabel):
         anime.setDuration(duration)
         anime.setStartValue(1)
         anime.setEndValue(0)
-        anime.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        anime.setEasingCurve(QtCore.QEasingCurve.Type.InQuad)
         anime.finished.connect(self.close)
 
     def show(self, message=None):
@@ -37,8 +37,8 @@ class Notification(QtWidgets.QLabel):
         self.adjustSize()
         self.update()
         center = self.parentWidget().size()
-        self.move(center.width() * .5 - self.width() * .5,
-                  center.height() * .5 - self.height())
+        self.move(int(center.width() * .5 - self.width() * .5),
+                  int(center.height() * .5 - self.height()))
         super(Notification, self).show()
 
     def mousePressEvent(self, event):
@@ -51,7 +51,7 @@ class IconPreviewer(QtWidgets.QDialog):
         super(IconPreviewer, self).__init__(parent)
 
         self.setStyleSheet("QDialog{background-color:#444444;border:1px solid #000000}")
-        self.setWindowFlags(QtCore.Qt.Popup)
+        self.setWindowFlags(QtCore.Qt.WindowType.Popup)
         layout = QtWidgets.QVBoxLayout(self)
 
         widgets = {
@@ -60,13 +60,13 @@ class IconPreviewer(QtWidgets.QDialog):
         }
 
         widget = widgets["label"]
-        widget.setAlignment(QtCore.Qt.AlignCenter)
-        widget.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
-                            QtWidgets.QSizePolicy.Minimum)
+        widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                            QtWidgets.QSizePolicy.Policy.Minimum)
         layout.addWidget(widget)
 
         widget = widgets["image"]
-        widget.setAlignment(QtCore.Qt.AlignCenter)
+        widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(widget)
 
         self.widgets = widgets
@@ -80,7 +80,7 @@ class IconPreviewer(QtWidgets.QDialog):
         size = QtCore.QSize(max([size.width(), 64]),
                             max([size.height(), 64]))
         pixmap = pixmap.scaled(size.width(), size.height(),
-                               QtCore.Qt.KeepAspectRatio,QtCore.Qt.SmoothTransformation)
+                               QtCore.Qt.AspectRatioMode.KeepAspectRatio,QtCore.Qt.TransformationMode.SmoothTransformation)
         widget = self.widgets["image"]
         widget.setPixmap(pixmap)
         widget.resize(size.width(), size.height())
@@ -182,8 +182,8 @@ class QtIconPage(QtWidgets.QWidget):
         widget.setAlternatingRowColors(True)
         widget.setAnimated(True)
         widget.setIndentation(16)
-        widget.setEditTriggers(widget.NoEditTriggers)
-        widget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
+        widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        widget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
 
         def cat_tree_change(selected, deselected):
             if not selected.indexes():
@@ -205,8 +205,7 @@ class QtIconPage(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(panels["list_panel"])
         widget = widgets["search"]
-        if __qtbind__ == "PySide2":
-            widget.setClearButtonEnabled(True)
+        widget.setClearButtonEnabled(True)
         widget.setPlaceholderText("search")
         layout.addWidget(widget)
         widget = widgets["icon_list"]
@@ -216,13 +215,13 @@ class QtIconPage(QtWidgets.QWidget):
         layout.addWidget(widget)
 
         widget.setIconSize(QtCore.QSize(24,24))
-        widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        widget.setEditTriggers(widget.NoEditTriggers)
-        widget.setViewMode(widget.IconMode)
+        widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        widget.setViewMode(QtWidgets.QListView.ViewMode.IconMode)
         widget.setUniformItemSizes(True)
-        widget.setResizeMode(widget.Adjust)
-        widget.setMovement(widget.Static)
-        widget.setSelectionMode(widget.ExtendedSelection)
+        widget.setResizeMode(QtWidgets.QListView.ResizeMode.Adjust)
+        widget.setMovement(QtWidgets.QListView.Movement.Static)
+        widget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
 
         _model = models["icon"]
         deg = delegate.QtIconDelegate(_model)
@@ -232,12 +231,12 @@ class QtIconPage(QtWidgets.QWidget):
         proxy = QSortFilterProxyModel()
         proxy.setSourceModel(_model)
         proxy.setDynamicSortFilter(True)
-        proxy.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        proxy.setSortCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
         proxy.setSortRole(model.IconName)
         proxy.setFilterRole(model.IconName)
-        proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        QtCore.QObject.connect(widgets["search"], QtCore.SIGNAL(
-            "textChanged(QString)"), proxy.setFilterRegExp)
+        proxy.setFilterCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+        # old-style SIGNAL() connections no longer exist in PySide6
+        widgets["search"].textChanged.connect(lambda text, p=proxy: set_filter_text(p, text))
 
         widgets["icon_list"].setModel(proxy)
 
@@ -267,8 +266,8 @@ class QtIconPage(QtWidgets.QWidget):
         widget = widgets["icon_names"]
         widget.setModel(QStringListModel())
         layout.addWidget(widget)
-        widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                             QtWidgets.QSizePolicy.Preferred)
+        widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                             QtWidgets.QSizePolicy.Policy.Preferred)
         widget = widgets["icon_count"]
         widget.setMinimumWidth(50)
         layout.addWidget(widget)
@@ -301,17 +300,17 @@ class QtIconPage(QtWidgets.QWidget):
 
     def contextMenuEvent(self, event):
         self.menu = QtWidgets.QMenu(self)
-        copy = QtWidgets.QAction(QtGui.QIcon(data.icons["copy"]),'copy text', self)
+        copy = QAction(QtGui.QIcon(data.icons["copy"]),'copy text', self)
         copy.triggered.connect(self.copy_name)
         self.menu.addAction(copy)
-        open = QtWidgets.QAction(QtGui.QIcon(data.icons["folder"]),'open folder', self)
+        open = QAction(QtGui.QIcon(data.icons["folder"]),'open folder', self)
         open.setEnabled(os.path.exists(self.widgets["icon_names"].currentText()))
         open.triggered.connect(self.open_file)
         self.menu.addAction(open)
-        save = QtWidgets.QAction(QtGui.QIcon(data.icons["save"]),'save icons', self)
+        save = QAction(QtGui.QIcon(data.icons["save"]),'save icons', self)
         save.triggered.connect(self.save_icons)
         self.menu.addAction(save)
-        show = QtWidgets.QAction(QtGui.QIcon(data.icons["eye"]),'show icon', self)
+        show = QAction(QtGui.QIcon(data.icons["eye"]),'show icon', self)
         show.triggered.connect(self.show_icon)
         self.menu.addAction(show)
 
@@ -384,7 +383,7 @@ class QtIconPage(QtWidgets.QWidget):
 
 
     def copy_name(self):
-        clipboard = QtGui.QClipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         name = self.widgets["icon_names"].currentText()
         if not name.startswith(":/"):
             for sdir in data.new_custom_icon_path:
@@ -392,7 +391,7 @@ class QtIconPage(QtWidgets.QWidget):
                     # remove folder
                     name = re.sub(sdir, "", name)
                     # remove size and .png
-                    name = re.sub("(.*?)(_\d+)?.png", r"\1", name)
+                    name = re.sub(r"(.*?)(_\d+)?.png", r"\1", name)
                     break
         clipboard.setText(name)
         self.widgets["notification"].show("<b>copyed</b> "+name)
@@ -440,29 +439,28 @@ class AtlasIconPage(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(panels["icon_panel"])
         widget = widgets["search"]
-        if __qtbind__ == "PySide2":
-            widget.setClearButtonEnabled(True)
+        widget.setClearButtonEnabled(True)
         widget.setPlaceholderText("search")
         layout.addWidget(widget)
 
         widget = widgets["icon_list"]
-        widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        widget.setEditTriggers(widget.NoEditTriggers)
-        widget.setResizeMode(widget.Adjust)
-        widget.setMovement(widget.Static)
+        widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        widget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        widget.setResizeMode(QtWidgets.QListView.ResizeMode.Adjust)
+        widget.setMovement(QtWidgets.QListView.Movement.Static)
         layout.addWidget(widget)
 
         _model = models["icon"]
 
         proxy = QSortFilterProxyModel()
         proxy.setDynamicSortFilter(True)
-        proxy.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        proxy.setSortCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
         proxy.setSourceModel(_model)
         proxy.setSortRole(model.IconName)
         proxy.setFilterRole(model.IconName)
-        proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        QtCore.QObject.connect(widgets["search"], QtCore.SIGNAL(
-            "textChanged(QString)"), proxy.setFilterRegExp)
+        proxy.setFilterCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+        # old-style SIGNAL() connections no longer exist in PySide6
+        widgets["search"].textChanged.connect(lambda text, p=proxy: set_filter_text(p, text))
 
         widget.setModel(proxy)
         deg = delegate.AtlasIconDelegate(_model)
@@ -473,8 +471,8 @@ class AtlasIconPage(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(panels["icon_info"])
         widget = widgets["icon_names"]
         layout.addWidget(widget, 0, 0)
-        widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                             QtWidgets.QSizePolicy.Preferred)
+        widget.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                             QtWidgets.QSizePolicy.Policy.Preferred)
         widget = widgets["icon_count"]
         widget.setMinimumWidth(50)
         layout.addWidget(widget, 0, 1)
@@ -487,7 +485,7 @@ class AtlasIconPage(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout(panels["icon_usage"])
         widget = widgets["icon_usage"]
         widget.setText("")
-        widget.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        widget.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(widget)
 
         self.panels = panels
@@ -532,7 +530,7 @@ class AboutPage(QtWidgets.QWidget):
 
         widget = widgets["text"]
 
-        widget.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+        widget.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextBrowserInteraction)
         widget.setOpenExternalLinks(True)
 
         icon_paths = "<hr><b>icon search paths</b><ul>"
@@ -542,7 +540,7 @@ class AboutPage(QtWidgets.QWidget):
         icon_paths +="</ul>"
 
         author_info = """
-            <pre><b>author : </b> kns002<br><b>version: </b> 0.02 <font color="#777777">(3ds max 2017+)</font><br><b>github : </b> <a href="https://github.com/knsii">https://github.com/knsii</a></pre>
+            <pre><b>author : </b> kns002<br><b>version: </b> 0.03 <font color="#777777">(3ds max 2017+)</font><br><b>github : </b> <a href="https://github.com/knsii">https://github.com/knsii</a></pre>
         """
         widget.setText(
         """

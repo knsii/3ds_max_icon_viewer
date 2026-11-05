@@ -1,6 +1,10 @@
 (
 
 rollout installer_rl "icon viewer installation" (
+    -- 3ds Max 2025 = release 27000. From 2025 on, menuMan was removed and replaced by a new menu system.
+    local is_new_menu_system = ((maxVersion())[1] >= 27000)
+    local menu_startup_file = (getDir #userStartupScripts) + @"\icon_viewer_menu.ms"
+
     fn get_script_menu = (
         local main_menu = menuman.getmainmenubar()
         local script_menu = undefined
@@ -17,6 +21,12 @@ rollout installer_rl "icon viewer installation" (
 
 
     fn remove_menu = (
+        if is_new_menu_system do (
+            -- 2025+: the menu comes from a startup script, so delete it and its callback
+            callbacks.removeScripts id:#nepreIconViewerMenu
+            if doesFileExist menu_startup_file do deleteFile menu_startup_file
+            return ok
+        )
         local script_menu = get_script_menu()
         if not script_menu==undefined do (
             -- remove item
@@ -34,7 +44,14 @@ rollout installer_rl "icon viewer installation" (
     local script_folder_name = "icon_viewer"
 
     fn add_menu = (
-        -- add item
+        if is_new_menu_system do (
+            -- 2025+: copy the menu startup script; the menu appears after Max restarts
+            local root = getfilenamepath (getthisscriptfilename())
+            makeDir (getDir #userStartupScripts) all:true
+            copyFile (root + "icon_viewer_menu.ms") menu_startup_file
+            return ok
+        )
+        -- add item (Max 2024 and older)
         local script_menu = get_script_menu()
         local item = menuman.createactionitem "icon_viewer" "NepreTool"
         item.settitle "MAXIcon &Viewer..."
@@ -57,7 +74,7 @@ rollout installer_rl "icon viewer installation" (
 
     button install_btn "install icon viewer" width:250 height:40
     group "option" (
-        checkbox menu_cbk "add \"mxsicon viewer\" to \"scripting\" menu" checked:true
+        checkbox menu_cbk "add menu entry (2025+: after restart)" checked:true
     )
     button uninstall_btn "uninstall" width:250 height:25
 
@@ -87,7 +104,7 @@ rollout installer_rl "icon viewer installation" (
         rollout result_rl "icon viewer installed" (
             group "where to find this tool" (
                 label macro_lab "in category: nepretool>icon_viewer" align:#left
-                label menu_lab  "or in menu scripting>mxsicon viewer..."  align:#left visible:menu_cbk.checked
+                label menu_lab  "or in the menu bar (Max 2025+: restart first)"  align:#left visible:menu_cbk.checked
             )
             button run_btn "run it now!" width:250 height:30
             on run_btn pressed do (

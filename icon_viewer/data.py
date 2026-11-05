@@ -42,7 +42,7 @@ class QtIcon():
             # use QImage to ensure thread safe https://doc.qt.io/qt-5/threads-modules.html
             image = QtGui.QImage(file)
             if max(image.width(),image.height())>24:
-                image = image.scaled(24,24,QtCore.Qt.KeepAspectRatio,QtCore.Qt.SmoothTransformation)
+                image = image.scaled(24,24,QtCore.Qt.AspectRatioMode.KeepAspectRatio,QtCore.Qt.TransformationMode.SmoothTransformation)
             self.map = image
         else:
             self.map = None
@@ -65,6 +65,6 @@ class AtlasIcon():
         if self.alpha:
             image.setAlphaChannel(QtGui.QImage(self.alpha))
         height = 24
-        self.map = image.scaledToHeight(height, mode=QtCore.Qt.SmoothTransformation)
+        self.map = image.scaledToHeight(height, mode=QtCore.Qt.TransformationMode.SmoothTransformation)
         self.name_width = height*7
         self.selected = None
